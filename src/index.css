@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("./assets/fonts/Montserrat-VariableFont_wght.ttf") format("truetype");
+}
+
+:root {
+  --font-family: "Montserrat", sans-serif;
+}
+
+html,
+body {
+  font-family: var(--font-family);
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  background-color: #0b0b0b;
+  color: #f5f5f5;
+}
+
+ .gradient-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-image: url('./assets/images/bggradient.svg'); 
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center; 
+    overflow: visible;
+}
+
+.bg-[#632667] {
+  /* background-color: #866E88; */
+   background: linear-gradient(50deg, #926e96, #866E88);
+    /* background: linear-gradient(0deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.3)), 
+                linear-gradient(0deg, rgba(134, 48, 138, 0.3), rgba(134, 48, 138, 0.3)); */
+
+}
+
+.bg-[#632667]:hover {
+   /*  background-color: #866E8896;  */
+   /*  
+   background: linear-gradient(0deg, #866E8896, #8d699196);
+   */
+   background: linear-gradient(0deg, #926e9696, #866E8896);
+   /* 
+   background: linear-gradient(0deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.24)), 
+   linear-gradient(0deg, rgba(134, 48, 138, 0.24), rgba(134, 48, 138, 0.24)); 
+   */
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e4e4e77d;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e4e4e7;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #818181;
+}
+
+
+
