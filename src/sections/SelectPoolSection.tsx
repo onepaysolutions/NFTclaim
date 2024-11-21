@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { useActiveAccount } from "thirdweb/react";
 import { sendTransaction } from "thirdweb";
 import { claimTo } from "thirdweb/extensions/erc721";
+import { supabase } from "@/utils/supabase";
 
 const NFTClaimSection: React.FC = () => {
   const { t } = useTranslation();
@@ -37,6 +38,7 @@ const NFTClaimSection: React.FC = () => {
 
       // Distribute OPE tokens if referral exists
       if(referral) {
+        await saveReferralRecord(address.address, referral);
         await distributeTokens(address.address, referral);
       }
 
@@ -58,6 +60,27 @@ const NFTClaimSection: React.FC = () => {
       console.log("Referral set:", ref);
     }
   }, []);
+
+  // Save referral record
+  const saveReferralRecord = async (userAddress: string, referralAddress: string) => {
+    try {
+      const { error } = await supabase
+        .from('referrals')
+        .insert([
+          { 
+            user_address: userAddress,
+            referrer_address: referralAddress,
+            claimed_at: new Date().toISOString(),
+            status: 'completed'
+          }
+        ]);
+
+      if (error) throw error;
+      
+    } catch (error) {
+      console.error('Error saving referral record:', error);
+    }
+  };
 
   return (
     <div className="w-full mt-20 flex flex-col items-center">

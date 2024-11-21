@@ -1,0 +1,22 @@
+{
+  "NFT Claim": "NFT クレーム",
+  "Claim your exclusive NFT now": "限定NFTを今すぐクレーム",
+  "Connect Wallet": "ウォレット接続",
+  "Switch to BSC": "BSCに切り替え",
+  "Exclusive NFT": "限定NFT",
+  "Limited Edition NFT Collection": "限定版NFTコレクション",
+  "Total Supply": "総供給量",
+  "Available": "残り数量",
+  "Please connect your wallet to claim": "クレームするにはウォレットを接続してください",
+  "Your Referral Link": "あなたの紹介リンク",
+  "Copy": "コピー",
+  "Claim NFT": "NFTをクレーム",
+  "Price": "価格：{{amount}}",
+  "Close": "閉じる",
+  "NFT claimed successfully!": "NFTのクレームに成功しました！",
+  "Failed to claim NFT": "NFTのクレームに失敗しました",
+  "Get NFT": "NFTを取得",
+  "Processing": "処理中...",
+  "Transaction failed": "取引に失敗しました",
+  "Transaction successful": "取引が成功しました"
+} 

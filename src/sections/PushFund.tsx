@@ -10,6 +10,7 @@ import {
 import { client } from "../client";
 import { getContract } from "thirdweb";
 import { chain } from "../chain";
+import { Suspense } from 'react';
 
 const PushFund: React.FC = () => {
   const { t } = useTranslation();
@@ -43,17 +44,19 @@ const PushFund: React.FC = () => {
         </div>
       </div>
 
-      <TransactionButton
-        transaction={async () => ({
-          contract,
-          method: "claim",
-          params: [1],
-          chain,
-          client
-        })}
-      >
-        {t("landing.claim")}
-      </TransactionButton>
+      <Suspense fallback="loading">
+        <TransactionButton
+          transaction={async () => ({
+            contract,
+            method: "claim",
+            params: [1],
+            chain,
+            client
+          })}
+        >
+          {t("landing.claim")}
+        </TransactionButton>
+      </Suspense>
 
       <div className="w-full flex mt-8 justify-between items-center">
         <a

@@ -39,8 +39,8 @@ const StatisticsCard: React.FC<{ stats: UserStats; index: number }> = ({
   // Get total NFTs minted
   const { data: totalSupply } = useReadContract({
     contract: NFTContract,
-    method: "totalSupply",
-    params: []
+    method: "getClaimConditionById",
+    params: [0n]
   });
 
   return (

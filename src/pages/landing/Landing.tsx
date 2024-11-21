@@ -176,10 +176,13 @@ export function Landing() {
                 {t("Your Referral Link")}
               </h2>
               <div className="flex gap-4">
+                <label className="sr-only" htmlFor="referral-link">{t("Referral Link")}</label>
                 <input
+                  id="referral-link"
                   type="text"
                   value={`${window.location.origin}?REF=${account.address}`}
                   readOnly
+                  aria-label={t("Referral Link")}
                   className="flex-1 bg-purple-900/30 rounded-xl px-4 py-3 border border-purple-500/20 text-gray-300"
                 />
                 <button 
