@@ -1,161 +1,106 @@
-import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import Select from "react-select";
-import { ConnectButton, useActiveAccount, useReadContract, TransactionButton } from "thirdweb/react";
+import { ConnectButton, useActiveAccount, useReadContract } from "thirdweb/react";
 import { client } from "@/client";
-import { NFTContract, OPEContract, NFTAddress } from "@/utils/contracts";
 import { chain } from "@/chain";
-import engFlag from "@/assets/icons/eng.png";
-import espFlag from "@/assets/icons/esp.png";
-import { showSuccessAlert } from "@/utils/notifications";
+import { ClaimButton } from "@/components/ClaimButton";
 import { getContract } from "thirdweb";
-import { claimTo } from "thirdweb/extensions/erc721";
+import { defineChain } from "thirdweb/chains";
+import { formatEther } from "viem";
+import Select from "react-select";
 import logoWhite from "@/assets/logos/logo-white.png";
+import nft1 from "@/assets/images/nft1.png";
 
-// Language option type
+const contract = getContract({
+  client,
+  chain: defineChain(56),
+  address: "0x3c1641A0de76B550C26D25d7f8ee3Ca19966E981",
+});
+
 interface LanguageOption {
   value: string;
   label: string;
   flag: string;
 }
 
+const languageOptions: LanguageOption[] = [
+  { value: "en", label: "English", flag: "🇺🇸" },
+  { value: "zh", label: "中文", flag: "🇨🇳" },
+  { value: "ja", label: "日本語", flag: "🇯🇵" },
+  { value: "ko", label: "한국어", flag: "🇰🇷" },
+  { value: "ms", label: "Bahasa Melayu", flag: "🇲🇾" },
+  { value: "th", label: "ไทย", flag: "🇹🇭" },
+  { value: "vi", label: "Tiếng Việt", flag: "🇻🇳" },
+  { value: "fr", label: "Français", flag: "🇫🇷" }
+];
+
 export function Landing() {
-  const address = useActiveAccount();
   const { t, i18n } = useTranslation();
+  const account = useActiveAccount();
 
-  // Get OPE balance
-  const { data: opeBalance } = useReadContract({
-    contract: OPEContract,
-    method: "balanceOf",
-    params: address ? [address.address] : ["0x0000000000000000000000000000000000000000"]
+  const { data: activeConditionId } = useReadContract({
+    contract,
+    method: "getActiveClaimConditionId",
+    params: [],
   });
 
-  // Get NFT balance
-  const { data: nftBalance } = useReadContract({
-    contract: NFTContract,
-    method: "balanceOf",
-    params: address ? [address.address] : ["0x0000000000000000000000000000000000000000"]
+  const { data: claimCondition } = useReadContract({
+    contract,
+    method: "getClaimConditionById",
+    params: activeConditionId ? [activeConditionId] : [],
   });
 
-  // Get referral data from localStorage
-  const [referralCount, setReferralCount] = useState(0);
-  useEffect(() => {
-    if(address) {
-      const count = localStorage.getItem(`referralCount_${address.address}`) || "0";
-      setReferralCount(Number(count));
-    }
-  }, [address]);
-
-  // Language options
-  const languageOptions: LanguageOption[] = [
-    { value: "en", label: "English", flag: engFlag },
-    { value: "ja", label: "日本語", flag: "🇯🇵" },
-    { value: "th", label: "ไทย", flag: "🇹🇭" },
-    { value: "ms", label: "Bahasa Melayu", flag: "🇲🇾" },
-    { value: "ko", label: "한국어", flag: "🇰🇷" },
-    { value: "zh", label: "中文", flag: "🇨🇳" }
-  ];
-
-  const [currentLanguage, setCurrentLanguage] = useState(i18n.language);
-
-  const handleLanguageChange = (newValue: LanguageOption | null) => {
-    if (newValue) {
-      setCurrentLanguage(newValue.value);
-      i18n.changeLanguage(newValue.value);
+  const handleLanguageChange = (option: LanguageOption | null) => {
+    if (option) {
+      i18n.changeLanguage(option.value);
     }
   };
-
-  // Handle copy referral link
-  const handleCopyLink = () => {
-    if (!address) return;
-    
-    const referralLink = `${window.location.origin}?REF=${address.address}`;
-    navigator.clipboard.writeText(referralLink)
-      .then(() => {
-        showSuccessAlert(t("Referral link copied!"));
-      })
-      .catch((err) => {
-        console.error("Copy failed:", err);
-      });
-  };
-
-  const nftContract = getContract({
-    client,
-    address: NFTAddress,
-    chain
-  });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-purple-900 to-black text-white">
-      {/* Navigation */}
-      <nav className="fixed top-0 w-full bg-black/30 backdrop-blur-md px-6 py-4 flex justify-between items-center z-50">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900 via-black to-black text-white">
+      <nav className="fixed top-0 w-full bg-black/30 backdrop-blur-lg border-b border-white/10 px-6 py-4 flex justify-between items-center z-50">
         <div className="flex items-center gap-4">
           <img 
             src={logoWhite} 
             alt="Logo" 
-            className="h-8 w-auto"
+            className="h-10 w-auto"
           />
-          <Select
-            value={languageOptions.find(opt => opt.value === currentLanguage)}
+          <Select<LanguageOption>
+            value={languageOptions.find(opt => opt.value === i18n.language)}
             onChange={handleLanguageChange}
             options={languageOptions}
             className="w-32"
             classNamePrefix="select"
+            formatOptionLabel={(option: LanguageOption) => (
+              <div className="flex items-center gap-2">
+                <span>{option.flag}</span>
+                <span>{option.label}</span>
+              </div>
+            )}
             styles={{
               control: (base) => ({
                 ...base,
                 background: 'rgba(0, 0, 0, 0.3)',
-                borderColor: '#4B5563',
-                '&:hover': {
-                  borderColor: '#6B7280'
-                },
+                borderColor: 'rgba(139, 92, 246, 0.2)',
+                '&:hover': { borderColor: 'rgba(139, 92, 246, 0.4)' },
                 boxShadow: 'none',
-                cursor: 'pointer'
               }),
               menu: (base) => ({
                 ...base,
                 background: 'rgba(0, 0, 0, 0.9)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid #4B5563'
+                border: '1px solid rgba(139, 92, 246, 0.2)',
               }),
               option: (base, state) => ({
                 ...base,
-                background: state.isFocused ? 'rgba(139, 92, 246, 0.3)' : 'transparent',
+                background: state.isFocused ? 'rgba(139, 92, 246, 0.2)' : 'transparent',
                 color: 'white',
-                cursor: 'pointer',
-                ':active': {
-                  background: 'rgba(139, 92, 246, 0.5)'
-                }
+                '&:hover': { background: 'rgba(139, 92, 246, 0.3)' },
               }),
               singleValue: (base) => ({
                 ...base,
                 color: 'white',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
               }),
-              input: (base) => ({
-                ...base,
-                color: 'white'
-              }),
-              dropdownIndicator: (base) => ({
-                ...base,
-                color: '#9CA3AF',
-                ':hover': {
-                  color: '#D1D5DB'
-                }
-              }),
-              indicatorSeparator: (base) => ({
-                ...base,
-                backgroundColor: '#4B5563'
-              })
             }}
-            formatOptionLabel={(option: LanguageOption) => (
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{option.flag}</span>
-                <span>{option.label}</span>
-              </div>
-            )}
           />
         </div>
         <ConnectButton
@@ -163,106 +108,93 @@ export function Landing() {
           chain={chain}
           connectButton={{
             label: t("Connect Wallet"),
-            className: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition"
+            className: "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-lg shadow-purple-500/20"
           }}
           switchButton={{
             label: t("Switch to BSC"),
-            className: "bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg transition"
+            className: "bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-2.5 rounded-xl font-medium transition-all duration-200 shadow-lg shadow-purple-500/20"
           }}
         />
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-32 px-6 container mx-auto">
-        <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold mb-4">{t("NFT Referral Program")}</h1>
-          <p className="text-xl text-gray-300">{t("Earn rewards by sharing and collecting NFTs")}</p>
-        </div>
-
-        {address ? (
-          <div className="grid md:grid-cols-3 gap-8 mb-16">
-            {/* NFT Balance Card */}
-            <div className="bg-purple-800/30 rounded-2xl p-6 backdrop-blur-sm">
-              <h3 className="text-xl font-semibold mb-2">{t("Your NFTs")}</h3>
-              <p className="text-3xl font-bold">{nftBalance?.toString() || "0"}</p>
-            </div>
-
-            {/* OPE Balance Card */}
-            <div className="bg-purple-800/30 rounded-2xl p-6 backdrop-blur-sm">
-              <h3 className="text-xl font-semibold mb-2">{t("OPE Balance")}</h3>
-              <p className="text-3xl font-bold">
-                {opeBalance ? Number(opeBalance) / 10**18 : "0"} OPE
-              </p>
-            </div>
-
-            {/* Referrals Card */}
-            <div className="bg-purple-800/30 rounded-2xl p-6 backdrop-blur-sm">
-              <h3 className="text-xl font-semibold mb-2">{t("Total Referrals")}</h3>
-              <p className="text-3xl font-bold">{referralCount}</p>
-            </div>
+      <div className="flex min-h-screen pt-20 pb-10">
+        <div className="container mx-auto px-4 flex flex-col items-center justify-center">
+          <div className="text-center mb-16 w-full">
+            <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+              {t("NFT Claim")}
+            </h1>
+            <p className="text-xl text-gray-300/80">{t("Claim your exclusive NFT now")}</p>
           </div>
-        ) : (
-          <div className="text-center mb-16">
-            <p className="text-xl text-gray-400 mb-4">{t("Connect your wallet to start")}</p>
-          </div>
-        )}
 
-        {/* NFT Claim Section */}
-        {address && (
-          <div className="bg-purple-900/30 rounded-2xl p-8 backdrop-blur-sm mb-16">
-            <h2 className="text-3xl font-bold mb-6">{t("Claim Your NFT")}</h2>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-300 mb-4">
-                  {t("Get your exclusive NFT and start earning rewards")}
-                </p>
-                <TransactionButton
-                  transaction={async () => {
-                    if (!address) throw new Error("No wallet connected");
-                    
-                    return claimTo({
-                      contract: nftContract,
-                      to: address.address,
-                      quantity: 1n
-                    });
-                  }}
-                >
-                  <button className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-3 rounded-lg transition">
-                    {t("Claim NFT (1000 USDT)")}
-                  </button>
-                </TransactionButton>
-              </div>
-              <div className="w-48 h-48 bg-purple-700/50 rounded-xl">
-                {/* NFT Preview */}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Referral Link Section */}
-        {address && (
-          <div className="bg-purple-900/30 rounded-2xl p-8 backdrop-blur-sm mb-16">
-            <h2 className="text-3xl font-bold mb-6">{t("Your Referral Link")}</h2>
-            <div className="flex gap-4">
-              <input
-                type="text"
-                value={`${window.location.origin}?REF=${address.address}`}
-                readOnly
-                aria-label="Referral Link"
-                title="Your referral link"
-                className="flex-1 bg-black/30 rounded-lg px-4 py-2"
+          <div className="w-full max-w-lg mx-auto bg-gradient-to-b from-purple-900/40 to-black/40 rounded-2xl p-8 backdrop-blur-sm border border-purple-500/20 shadow-xl shadow-purple-500/10">
+            <div className="text-center">
+              <img 
+                src={nft1}
+                alt="NFT Preview"
+                className="w-full h-80 object-cover rounded-xl mb-8 border border-purple-500/20 shadow-lg shadow-purple-500/10"
               />
-              <button 
-                onClick={handleCopyLink}
-                className="bg-purple-600 hover:bg-purple-700 px-6 py-2 rounded-lg transition"
-              >
-                {t("Copy")}
-              </button>
+              
+              <h2 className="text-3xl font-bold mb-3 bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+                {t("Exclusive NFT")}
+              </h2>
+              <p className="text-gray-300/80 mb-6 text-lg">{t("Limited Edition NFT Collection")}</p>
+              
+              {claimCondition && (
+                <div className="mb-8">
+                  <p className="text-2xl font-bold text-purple-400 mb-6">1000 USDT</p>
+                  <div className="grid grid-cols-2 gap-8">
+                    <div className="bg-purple-900/30 rounded-xl p-4 border border-purple-500/20">
+                      <p className="text-sm text-gray-300/80 mb-1">{t("Total Supply")}</p>
+                      <p className="text-2xl font-bold text-purple-400">100</p>
+                    </div>
+                    <div className="bg-purple-900/30 rounded-xl p-4 border border-purple-500/20">
+                      <p className="text-sm text-gray-300/80 mb-1">{t("Available")}</p>
+                      <p className="text-2xl font-bold text-purple-400">50</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8">
+              {account ? (
+                <ClaimButton 
+                  address={account.address}
+                  claimCondition={claimCondition}
+                />
+              ) : (
+                <p className="text-gray-400/80 text-center text-lg">
+                  {t("Please connect your wallet to claim")}
+                </p>
+              )}
             </div>
           </div>
-        )}
-      </section>
+
+          {account && (
+            <div className="w-full max-w-lg mx-auto bg-gradient-to-b from-purple-900/40 to-black/40 rounded-2xl p-8 backdrop-blur-sm mt-8 border border-purple-500/20 shadow-xl shadow-purple-500/10">
+              <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-purple-400 to-purple-600 bg-clip-text text-transparent">
+                {t("Your Referral Link")}
+              </h2>
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  value={`${window.location.origin}?REF=${account.address}`}
+                  readOnly
+                  className="flex-1 bg-purple-900/30 rounded-xl px-4 py-3 border border-purple-500/20 text-gray-300"
+                />
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}?REF=${account.address}`);
+                  }}
+                  className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-3 rounded-xl font-medium transition-all duration-200 shadow-lg shadow-purple-500/20"
+                >
+                  {t("Copy")}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
-
